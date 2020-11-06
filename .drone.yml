@@ -1,0 +1,21 @@
+kind: pipeline
+type: kubernetes
+name: default
+
+steps:
+  - name: build
+    image: adoptopenjdk/openjdk11
+    user: 0
+    commands:
+      - chmod +rwx ./mvnw
+      - ./mvnw package -Dquarkus.package.type=fast-jar 
+  - name: docker
+    image: plugins/docker
+    settings:
+      repo: modeseven/noticegen
+      dockerfile: src/main/docker/Dockerfile.fast-jar
+      tags: ${DRONE_COMMIT}
+      username:
+        from_secret: dockerhub_username
+      password:
+        from_secret: dockerhub_password
