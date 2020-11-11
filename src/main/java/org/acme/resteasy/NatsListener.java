@@ -36,9 +36,10 @@ public class NatsListener {
     void onStart(@Observes StartupEvent ev) {
         String natsConStr = "nats://" + host + ":" + port;
         LOG.info("starting Nats Listener, connecting to nats on:" + natsConStr);
+        // connecting to nats on:nats://nats:tcp://10.106.107.144:4223
 
         try {
-            nats = Nats.connect(natsConStr);
+            nats = Nats.connect(host);
             LOG.info("connected to NATS on:" + natsConStr);
 
             Dispatcher d = nats.createDispatcher((msg) -> {

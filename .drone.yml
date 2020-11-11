@@ -27,9 +27,7 @@ steps:
       event:
         exclude:
           - tag
-
-
-  - name: Update GITOPS
+  - name: Update staging GITOPS cluster
     image: cloudowski/drone-kustomize
     environment:
       GIT:
@@ -41,16 +39,9 @@ steps:
       - git version
       - env
       - echo $${GIT} $${GIT_PW}
-      #- git config --global user.name $${GIT}
-      #- git config --global user.password $${GIT_PW}
-      # - curl https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh --output kust.sh
-      # - chmod +rwx ./kust.sh
-      # - ls -l
-      # - cat kust.sh
-      #  - ./kust.sh
       - kustomize version
       - git clone https://$${GIT}:$${GIT_PW}@github.com/modeseven/cluster.git
-      - cd cluster/environments/production/
+      - cd cluster/environments/staging/
       - ls -l
       # - cd deploy/overlays/dev    
       - kustomize edit set image modeseven/noticegen:${DRONE_SOURCE_BRANCH/\//-}-${DRONE_COMMIT_SHA:0:8}
