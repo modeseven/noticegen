@@ -31,9 +31,15 @@ steps:
 
   - name: Update GITOPS
     image: cloudowski/drone-kustomize
+    environment:
+      GIT:
+        from_secret: git
+      GIT_PW:
+        from_secret: git_pw
     user: 0
     commands:
       - git version
+      - echo ${GIT}
       - git config --global user.name ${GIT}
       - git config --global user.password ${GIT_PW}
       # - curl https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh --output kust.sh
@@ -54,4 +60,4 @@ steps:
       - git add .
       - git commit -m "Drone updated notice gen config"
       - git push
-    secrets: [ git, git_pw ]
+
