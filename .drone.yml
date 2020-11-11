@@ -49,3 +49,5 @@ steps:
       - cat deployment.yml
       - cat kustomization.yaml
       # - kubectl apply -k . && kubedog rollout track deployment {your-deployment-name} -n {your-namespace} -t {your-tomeout}
+      - git add . -m "Drone updated notice gen config"
+      - git push
