@@ -30,7 +30,7 @@ steps:
 
 
   - name: Update GITOPS
-    image: quay.io/ipedrazas/drone-helm
+    image: plugins/github-release
     user: 0
     commands:
       - git version
