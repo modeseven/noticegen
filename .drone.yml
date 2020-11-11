@@ -2,6 +2,9 @@ kind: pipeline
 type: kubernetes
 name: default
 
+environment:
+  SERVICE_NM: noticegen
+
 steps:
   - name: build
     image: adoptopenjdk/openjdk11
@@ -12,13 +15,13 @@ steps:
   - name: docker
     image: plugins/docker
     settings:
-      repo: modeseven/noticegen
+      repo: modeseven/${SERVICE_NM}
       dockerfile: src/main/docker/Dockerfile.fast-jar
       tags:
         - ${DRONE_SOURCE_BRANCH/\//-}
         - ${DRONE_SOURCE_BRANCH/\//-}-${DRONE_COMMIT_SHA:0:8}
       cache_from:
-        - modeseven/noticegen:${DRONE_SOURCE_BRANCH/\//-}
+        - modeseven/${SERVICE_NM}:${DRONE_SOURCE_BRANCH/\//-}
       username:
         from_secret: dockerhub_username
       password:
@@ -44,11 +47,11 @@ steps:
       - cd cluster/environments/staging/
       - ls -l
       # - cd deploy/overlays/dev    
-      - kustomize edit set image modeseven/noticegen:${DRONE_SOURCE_BRANCH/\//-}-${DRONE_COMMIT_SHA:0:8}
+      - kustomize edit set image modeseven/${SERVICE_NM}:${DRONE_SOURCE_BRANCH/\//-}-${DRONE_COMMIT_SHA:0:8}
       - ls -l
       #- cat deployment.yml
       - cat kustomization.yaml
       - git add .
-      - git commit -m "Drone updated modeseven/noticegen:${DRONE_SOURCE_BRANCH/\//-}-${DRONE_COMMIT_SHA:0:8}"
+      - git commit -m "Drone updated modeseven/${SERVICE_NM}:${DRONE_SOURCE_BRANCH/\//-}-${DRONE_COMMIT_SHA:0:8}"
       - git push
 
