@@ -34,11 +34,12 @@ public class NatsListener {
     public List<String> messages = new ArrayList<String>();
 
     void onStart(@Observes StartupEvent ev) {
-        LOG.info("starting Nats Listener...");
+        String natsConStr = "nats://" + host + ":" + port;
+        LOG.info("starting Nats Listener, connecting to nats on:" + natsConStr);
 
         try {
-            nats = Nats.connect("nats://" + host + ":" + port);
-            LOG.info("connected to NATS on:" + host + ":" + port);
+            nats = Nats.connect(natsConStr);
+            LOG.info("connected to NATS on:" + natsConStr);
 
             Dispatcher d = nats.createDispatcher((msg) -> {
                 String response = new String(msg.getData(), StandardCharsets.UTF_8);
@@ -51,6 +52,7 @@ public class NatsListener {
 
 
         } catch (Exception e) {
+            LOG.error("failed to connect nats on:" + natsConStr);
             e.printStackTrace();
         }
     }
