@@ -30,7 +30,7 @@ steps:
 
 
   - name: Update GITOPS
-    image: appleboy/drone-git-push
+    image: quay.io/ipedrazas/drone-helm
     user: 0
     commands:
       - git version
