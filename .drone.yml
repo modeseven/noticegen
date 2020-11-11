@@ -41,8 +41,8 @@ steps:
       - git version
       - env
       - echo $${GIT} $${GIT_PW}
-      #- git config --global user.name ${GIT}
-      #- git config --global user.password ${GIT_PW}
+      - git config --global user.name $${GIT}
+      - git config --global user.password $${GIT_PW}
       # - curl https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh --output kust.sh
       # - chmod +rwx ./kust.sh
       # - ls -l
