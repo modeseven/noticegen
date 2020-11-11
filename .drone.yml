@@ -36,7 +36,8 @@ steps:
       - git version
       - curl https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh --output kust.sh
       - chmod +rwx ./kust.sh
-      - ./kust.sh
+      - ls -l
+      - kust.sh
       - kustomize version
       # - cd deploy/overlays/dev    
       # - kustomize edit set image {your-docker-registry}:${DRONE_BUILD_NUMBER}
