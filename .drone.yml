@@ -33,7 +33,8 @@ steps:
     image: appleboy/drone-git-push
     commands:
       - git version
-      - curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+      - curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
+      - ./install_kustomize.sh
       - kustomize version
       # - cd deploy/overlays/dev    
       # - kustomize edit set image {your-docker-registry}:${DRONE_BUILD_NUMBER}
