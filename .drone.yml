@@ -31,9 +31,11 @@ steps:
 
   - name: Update GITOPS
     image: appleboy/drone-git-push
+    user: 0
     commands:
       - git version
       - curl https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh --output kust.sh
+      - chmod +rwx ./kust.sh
       - ./kust.sh
       - kustomize version
       # - cd deploy/overlays/dev    
