@@ -3,27 +3,38 @@ type: kubernetes
 name: default
 
 steps:
-  - name: build
-    image: adoptopenjdk/openjdk11
-    user: 0
+  # - name: build
+  #   image: adoptopenjdk/openjdk11
+  #   user: 0
+  #   commands:
+  #     - chmod +rwx ./mvnw
+  #     - ./mvnw package -Dquarkus.package.type=fast-jar 
+  # - name: docker
+  #   image: plugins/docker
+  #   settings:
+  #     repo: modeseven/noticegen
+  #     dockerfile: src/main/docker/Dockerfile.fast-jar
+  #     tags:
+  #       - ${DRONE_SOURCE_BRANCH/\//-}
+  #       - ${DRONE_SOURCE_BRANCH/\//-}-${DRONE_COMMIT_SHA:0:8}
+  #     cache_from:
+  #       - modeseven/noticegen:${DRONE_SOURCE_BRANCH/\//-}
+  #     username:
+  #       from_secret: dockerhub_username
+  #     password:
+  #       from_secret: dockerhub_password
+  #   when:
+  #     event:
+  #       exclude:
+  #         - tag
+
+
+  - name: Update GITOPS
+    image: appleboy/drone-git-push
     commands:
-      - chmod +rwx ./mvnw
-      - ./mvnw package -Dquarkus.package.type=fast-jar 
-  - name: docker
-    image: plugins/docker
-    settings:
-      repo: modeseven/noticegen
-      dockerfile: src/main/docker/Dockerfile.fast-jar
-      tags:
-        - ${DRONE_SOURCE_BRANCH/\//-}
-        - ${DRONE_SOURCE_BRANCH/\//-}-${DRONE_COMMIT_SHA:0:8}
-      cache_from:
-        - modeseven/noticegen:${DRONE_SOURCE_BRANCH/\//-}
-      username:
-        from_secret: dockerhub_username
-      password:
-        from_secret: dockerhub_password
-    when:
-      event:
-        exclude:
-          - tag
+      - git version
+      - curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+      - kustomize version
+      # - cd deploy/overlays/dev    
+      # - kustomize edit set image {your-docker-registry}:${DRONE_BUILD_NUMBER}
+      # - kubectl apply -k . && kubedog rollout track deployment {your-deployment-name} -n {your-namespace} -t {your-tomeout}
