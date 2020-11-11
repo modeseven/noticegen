@@ -34,6 +34,7 @@ public class NatsListener {
     public List<String> messages = new ArrayList<String>();
 
     void onStart(@Observes StartupEvent ev) {
+        LOG.info("host is?:" + host);
         String natsConStr = "nats://" + host + ":" + port;
         LOG.info("starting Nats Listener, connecting to nats on:" + natsConStr);
         // connecting to nats on:nats://nats:tcp://10.106.107.144:4223
