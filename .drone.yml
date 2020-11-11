@@ -30,15 +30,15 @@ steps:
 
 
   - name: Update GITOPS
-    image: plugins/github-release
+    image: cloudowski/drone-kustomize
     user: 0
     commands:
       - git version
-      - curl https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh --output kust.sh
-      - chmod +rwx ./kust.sh
-      - ls -l
-      - cat kust.sh
-      - ./kust.sh
+      # - curl https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh --output kust.sh
+      # - chmod +rwx ./kust.sh
+      # - ls -l
+      # - cat kust.sh
+      #  - ./kust.sh
       - kustomize version
       # - cd deploy/overlays/dev    
       # - kustomize edit set image {your-docker-registry}:${DRONE_BUILD_NUMBER}
