@@ -40,6 +40,9 @@ steps:
       # - cat kust.sh
       #  - ./kust.sh
       - kustomize version
+      - git clone https://github.com/modeseven/cluster.git
+      - cd cluster/services/noticegen
+      - ls -l
       # - cd deploy/overlays/dev    
       # - kustomize edit set image {your-docker-registry}:${DRONE_BUILD_NUMBER}
       # - kubectl apply -k . && kubedog rollout track deployment {your-deployment-name} -n {your-namespace} -t {your-tomeout}
