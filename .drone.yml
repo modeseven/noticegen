@@ -44,7 +44,7 @@ steps:
       - cd cluster/services/noticegen
       - ls -l
       # - cd deploy/overlays/dev    
-      - kustomize edit set image ${DRONE_SOURCE_BRANCH/\//-}-${DRONE_COMMIT_SHA:0:8}
+      - kustomize edit set image modeseven/noticegen:${DRONE_SOURCE_BRANCH/\//-}-${DRONE_COMMIT_SHA:0:8}
       - ls -l
       - cat deployment.yml
       # - kubectl apply -k . && kubedog rollout track deployment {your-deployment-name} -n {your-namespace} -t {your-tomeout}
