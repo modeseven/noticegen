@@ -49,7 +49,7 @@ steps:
       # - cat kust.sh
       #  - ./kust.sh
       - kustomize version
-      - git clone https://github.com/modeseven/cluster.git
+      - git clone https://$${GIT}:$${GIT_PW}@github.com/modeseven/cluster.git
       - cd cluster/services/noticegen
       - ls -l
       # - cd deploy/overlays/dev    
