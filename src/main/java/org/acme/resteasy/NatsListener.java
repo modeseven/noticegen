@@ -15,6 +15,7 @@ import io.nats.client.Dispatcher;
 import io.nats.client.Nats;
 import io.quarkus.runtime.Startup;
 import io.quarkus.runtime.StartupEvent;
+import io.nats.client.Connection.Status;
 
 @Startup
 @ApplicationScoped
@@ -28,7 +29,7 @@ public class NatsListener {
     @ConfigProperty(name = "nats.port", defaultValue = "4222")
     public String port;
 
-    @ConfigProperty(name = "nats.subject", defaultValue = "subject")
+    @ConfigProperty(name = "nats.subject", defaultValue = "bookingRqst")
     public String subject;
 
     public List<String> messages = new ArrayList<String>();
@@ -55,12 +56,22 @@ public class NatsListener {
 
         } catch (Exception e) {
             LOG.error("failed to connect nats on:" + natsConStr);
+     
             e.printStackTrace();
         }
     }
 
     public  List<String> getMessages() {
         return this.messages;
+    }
+
+    public boolean isLive() {
+        if (nats != null) {
+            if (nats.getStatus().equals(Status.CONNECTED)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
