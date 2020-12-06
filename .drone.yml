@@ -1,6 +1,12 @@
 kind: pipeline
 type: kubernetes
-name: default
+name: buildimage
+
+trigger:
+  branch:
+    - master
+  event:
+    - push
 
 steps:
   - name: build
@@ -9,24 +15,33 @@ steps:
     commands:
       - chmod +rwx ./mvnw
       - ./mvnw package -Dquarkus.package.type=fast-jar 
-  - name: docker
+
+  - name: build and publish docker image
     image: plugins/docker
     settings:
-      repo: modeseven/noticegen
+      repo: modeseven/${DRONE_REPO_NAME}
       dockerfile: src/main/docker/Dockerfile.fast-jar
       tags:
         - ${DRONE_SOURCE_BRANCH/\//-}
         - ${DRONE_SOURCE_BRANCH/\//-}-${DRONE_COMMIT_SHA:0:8}
       cache_from:
-        - modeseven/noticegen:${DRONE_SOURCE_BRANCH/\//-}
+        - modeseven/${DRONE_REPO_NAME}:${DRONE_SOURCE_BRANCH/\//-}
       username:
         from_secret: dockerhub_username
       password:
         from_secret: dockerhub_password
-    when:
-      event:
-        exclude:
-          - tag
+---
+kind: pipeline
+name: deploy staging
+type: kubernetes
+depends_on:
+  - buildimage
+trigger:
+  branch:
+  - master
+  event:
+  - push
+steps:
   - name: Update staging GITOPS cluster
     image: cloudowski/drone-kustomize
     environment:
@@ -36,19 +51,68 @@ steps:
         from_secret: git_pw
     user: 0
     commands:
-      - git version
-      - env
-      - echo $${GIT} $${GIT_PW}
-      - kustomize version
       - git clone https://$${GIT}:$${GIT_PW}@github.com/modeseven/cluster.git
       - cd cluster/environments/staging/
-      - ls -l
-      # - cd deploy/overlays/dev    
-      - kustomize edit set image modeseven/noticegen:${DRONE_SOURCE_BRANCH/\//-}-${DRONE_COMMIT_SHA:0:8}
-      - ls -l
-      #- cat deployment.yml
-      - cat kustomization.yaml
+      - kustomize edit set image modeseven/${DRONE_REPO_NAME}:${DRONE_SOURCE_BRANCH/\//-}-${DRONE_COMMIT_SHA:0:8}
       - git add .
-      - git commit -m "Drone updated modeseven/noticegen:${DRONE_SOURCE_BRANCH/\//-}-${DRONE_COMMIT_SHA:0:8}"
+      - git commit -m "Drone updated modeseven/${DRONE_REPO_NAME}:${DRONE_SOURCE_BRANCH/\//-}-${DRONE_COMMIT_SHA:0:8}"
       - git push
+---
+kind: pipeline
+name: deploy prod
+type: kubernetes
 
+clone:
+  disable: true
+
+trigger:
+  event:
+  - tag
+
+volumes:
+  - name: dockersock
+    temp: {}
+
+services:
+- name: docker
+  image: docker:dind
+  privileged: true
+  volumes:
+  - name: dockersock
+    path: /var/run
+
+steps:
+  - name: pull and promote image
+    image: docker:dind
+    environment:
+      DOCKER_LOGIN:
+        from_secret: dockerhub_username
+      DOCKER_PASSWORD:
+        from_secret: dockerhub_password
+    volumes:
+    - name: dockersock
+      path: /var/run
+    commands:
+    - sleep 15 # give docker enough time to start
+    - docker ps -a  
+    - echo promote to prod ${DRONE_SOURCE_BRANCH/\//-}-${DRONE_COMMIT_SHA:0:8}
+    - docker login -u=$${DOCKER_LOGIN} -p=$${DOCKER_PASSWORD}
+    - docker pull modeseven/${DRONE_REPO_NAME}:${DRONE_SOURCE_BRANCH/\//-}-${DRONE_COMMIT_SHA:0:8}
+    - docker tag modeseven/${DRONE_REPO_NAME}:${DRONE_SOURCE_BRANCH/\//-}-${DRONE_COMMIT_SHA:0:8} modeseven/${DRONE_REPO_NAME}:$${DRONE_TAG}
+    - docker tag modeseven/${DRONE_REPO_NAME}:${DRONE_SOURCE_BRANCH/\//-}-${DRONE_COMMIT_SHA:0:8} modeseven/${DRONE_REPO_NAME}:latest
+    - docker push  modeseven/${DRONE_REPO_NAME}
+  - name: Update prod GITOPS cluster
+    image: cloudowski/drone-kustomize
+    environment:
+      GIT:
+        from_secret: git
+      GIT_PW:
+        from_secret: git_pw
+    user: 0
+    commands:
+      - git clone https://$${GIT}:$${GIT_PW}@github.com/modeseven/cluster.git
+      - cd cluster/environments/production/
+      - kustomize edit set image modeseven/${DRONE_REPO_NAME}:$${DRONE_TAG}
+      - git add .
+      - git commit -m "Drone updated modeseven/${DRONE_REPO_NAME}:$${DRONE_TAG}"
+      - git push
